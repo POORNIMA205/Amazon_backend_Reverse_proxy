@@ -1,1021 +1,201 @@
-# 🛒 Amazon Backend — E-Commerce REST API
+# Amazon Backend Reverse Proxy Using NGINX
 
-A production-oriented **Amazon-style e-commerce backend** built with **Python and FastAPI**, designed around modular REST APIs for authentication, product management, shopping carts, orders, and payment processing.
+## 🚀 Project Overview
 
-The project demonstrates backend engineering principles including **RESTful API design, authentication and authorization, database persistence, request validation, modular architecture, API documentation, containerization, and deployment readiness**.
+This project implements an **NGINX Reverse Proxy** for an Amazon-style e-commerce backend built with FastAPI. NGINX acts as an intermediary between clients and the backend application, forwarding incoming HTTP requests to the appropriate backend server and returning responses to clients.
 
----
+The project demonstrates reverse proxy configuration, HTTP request forwarding, backend integration, and centralized API access.
 
-## 📌 Table of Contents
+## ✨ Features
 
-* [Overview](#-overview)
-* [Objectives](#-objectives)
-* [Key Features](#-key-features)
-* [Technology Stack](#-technology-stack)
-* [System Architecture](#-system-architecture)
-* [Request Flow](#-request-flow)
-* [Project Structure](#-project-structure)
-* [Core Modules](#-core-modules)
-* [Authentication & Authorization](#-authentication--authorization)
-* [Database Architecture](#-database-architecture)
-* [API Architecture](#-api-architecture)
-* [API Documentation](#-api-documentation)
-* [Installation](#-installation)
-* [Configuration](#-configuration)
-* [Running Locally](#-running-locally)
-* [Running with Docker](#-running-with-docker)
-* [Testing](#-testing)
-* [Security Considerations](#-security-considerations)
-* [Error Handling](#-error-handling)
-* [Deployment Architecture](#-deployment-architecture)
-* [DevOps Workflow](#-devops-workflow)
-* [Future Enhancements](#-future-enhancements)
-* [Learning Outcomes](#-learning-outcomes)
-* [Author](#-author)
+* **NGINX Reverse Proxy:** Routes client requests to the FastAPI backend.
+* **Request Forwarding:** Forwards incoming HTTP requests to the configured backend server.
+* **Response Handling:** Returns backend responses to clients through NGINX.
+* **Centralized API Access:** Provides a single entry point for backend requests.
+* **Backend Integration:** Works with an Amazon-style e-commerce API.
+* **Scalable Architecture:** Provides a foundation for load balancing and additional backend services.
 
----
+## 🛠️ Technology Stack
 
-# 📖 Overview
+* **NGINX** — Reverse proxy server
+* **Python** — Backend application development
+* **FastAPI** — REST API framework
+* **Uvicorn** — ASGI application server
+* **Git & GitHub** — Version control and project hosting
 
-This project implements the backend architecture of an **Amazon-style online shopping platform**.
-
-Instead of building a traditional monolithic webpage, the application exposes a set of RESTful APIs that can be consumed by a web frontend, mobile application, or other services.
-
-The backend handles the complete shopping workflow:
+## 🏗️ System Architecture
 
 ```text
-User
-  │
-  ▼
-Authentication
-  │
-  ▼
-Browse Products
-  │
-  ▼
-Add Products to Cart
-  │
-  ▼
-Create Order
-  │
-  ▼
-Payment Processing
-  │
-  ▼
-Order Confirmation
+              Client
+                |
+                v
+        NGINX Reverse Proxy
+          Port 80 / 8080
+                |
+                v
+       FastAPI Application
+          Uvicorn Server
+            Port 8000
+                |
+                v
+       Amazon Backend APIs
+   Register | Login | Products
+       Cart | Orders | Payments
 ```
 
-The application is designed with separation of concerns between API routing, business logic, authentication, data validation, and database persistence.
+## 📁 Project Structure
 
----
-
-# 🎯 Objectives
-
-The primary objectives of the project are:
-
-* Build a scalable REST API using FastAPI.
-* Implement secure user authentication.
-* Implement JWT-based authorization.
-* Provide product management APIs.
-* Implement shopping cart functionality.
-* Implement order management.
-* Implement payment workflow.
-* Persist application data using a relational database.
-* Provide automatic API documentation.
-* Containerize the application using Docker.
-* Follow modular backend architecture.
-* Create a foundation suitable for cloud deployment.
-
----
-
-# ✨ Key Features
-
-## 👤 User Management
-
-* User registration
-* User authentication
-* Password-based login
-* JWT token generation
-* Protected API endpoints
-* Role-based access concepts
-
-## 📦 Product Management
-
-* Product creation
-* Product retrieval
-* Product updates
-* Product deletion
-* Product information management
-
-## 🛒 Shopping Cart
-
-* Add products to cart
-* View cart
-* Update cart items
-* Remove products
-* Calculate cart totals
-
-## 📋 Order Management
-
-* Create orders
-* Retrieve orders
-* Track order information
-* Associate orders with authenticated users
-* Maintain order data in the database
-
-## 💳 Payment Flow
-
-The application contains a payment workflow integrated into the order lifecycle.
+Example structure:
 
 ```text
-Cart
- │
- ▼
-Order Creation
- │
- ▼
-Payment
- │
- ▼
-Payment Status
- │
- ▼
-Order Confirmation
+Amazon_backend_Reverse_proxy/
+├── nginx.conf
+├── README.md
+└── ...
 ```
 
-> Payment processing in this project represents a backend payment workflow. Production systems should integrate a certified payment provider rather than handling raw card information directly.
+The actual repository may also contain Docker configuration, scripts, or application files depending on your setup.
 
-## 📚 API Documentation
+## ⚙️ Installation and Setup
 
-FastAPI automatically generates interactive API documentation.
-
-Available documentation typically includes:
-
-```text
-/swagger
-/redoc
-```
-
-The exact paths depend on the application's FastAPI configuration.
-
----
-
-# 🧰 Technology Stack
-
-| Layer                | Technology |
-| -------------------- | ---------- |
-| Programming Language | Python     |
-| API Framework        | FastAPI    |
-| API Server           | Uvicorn    |
-| ORM                  | SQLAlchemy |
-| Database             | SQLite     |
-| Authentication       | JWT        |
-| Validation           | Pydantic   |
-| API Style            | REST       |
-| Containerization     | Docker     |
-| Version Control      | Git        |
-| Repository           | GitHub     |
-
----
-
-# 🏗️ System Architecture
-
-The application follows a modular layered backend architecture.
-
-```text
-                    ┌──────────────────────┐
-                    │       CLIENT         │
-                    │ Web / Mobile / API   │
-                    └──────────┬───────────┘
-                               │
-                               │ HTTP / HTTPS
-                               ▼
-                    ┌──────────────────────┐
-                    │      FASTAPI         │
-                    │    API Layer         │
-                    └──────────┬───────────┘
-                               │
-                 ┌─────────────┼─────────────┐
-                 │             │             │
-                 ▼             ▼             ▼
-          ┌────────────┐ ┌────────────┐ ┌────────────┐
-          │   Auth     │ │  Products  │ │    Cart    │
-          │   Module   │ │   Module   │ │   Module   │
-          └──────┬─────┘ └──────┬─────┘ └──────┬─────┘
-                 │              │              │
-                 └──────────────┼──────────────┘
-                                ▼
-                     ┌────────────────────┐
-                     │  Business Logic    │
-                     │ / Service Layer    │
-                     └──────────┬─────────┘
-                                │
-                                ▼
-                     ┌────────────────────┐
-                     │    SQLAlchemy      │
-                     │       ORM          │
-                     └──────────┬─────────┘
-                                │
-                                ▼
-                     ┌────────────────────┐
-                     │      SQLite        │
-                     │     Database       │
-                     └────────────────────┘
-```
-
----
-
-# 🔄 Request Flow
-
-A typical authenticated request follows this lifecycle:
-
-```text
-Client
-  │
-  │ HTTP Request
-  ▼
-FastAPI Router
-  │
-  ▼
-Request Validation
-  │
-  ▼
-Authentication / JWT
-  │
-  ▼
-Business Logic
-  │
-  ▼
-SQLAlchemy ORM
-  │
-  ▼
-Database
-  │
-  ▼
-Response Model
-  │
-  ▼
-JSON Response
-```
-
-This approach separates request handling from persistence and makes the application easier to maintain and extend.
-
----
-
-# 📁 Project Structure
-
-A recommended structure for the backend is:
-
-```text
-Amazon_backend/
-│
-├── app/
-│   ├── __init__.py
-│   ├── main.py
-│   │
-│   ├── models/
-│   │   ├── __init__.py
-│   │   ├── user.py
-│   │   ├── product.py
-│   │   ├── cart.py
-│   │   ├── order.py
-│   │   └── payment.py
-│   │
-│   ├── schemas/
-│   │   ├── user.py
-│   │   ├── product.py
-│   │   ├── cart.py
-│   │   ├── order.py
-│   │   └── payment.py
-│   │
-│   ├── routers/
-│   │   ├── auth.py
-│   │   ├── products.py
-│   │   ├── cart.py
-│   │   ├── orders.py
-│   │   └── payments.py
-│   │
-│   ├── services/
-│   │   ├── auth_service.py
-│   │   ├── product_service.py
-│   │   ├── cart_service.py
-│   │   ├── order_service.py
-│   │   └── payment_service.py
-│   │
-│   ├── database/
-│   │   ├── database.py
-│   │   └── dependencies.py
-│   │
-│   └── core/
-│       ├── security.py
-│       └── config.py
-│
-├── tests/
-│
-├── requirements.txt
-├── Dockerfile
-├── docker-compose.yml
-├── seed_admin.py
-├── .env
-├── .gitignore
-└── README.md
-```
-
-> The exact structure should be adjusted to match the actual source code in the repository.
-
----
-
-# 🧩 Core Modules
-
-## 1. Authentication Module
-
-Responsible for:
-
-```text
-Registration
-    ↓
-Password Validation
-    ↓
-Login
-    ↓
-JWT Generation
-    ↓
-Authenticated Requests
-```
-
-The JWT token is sent with subsequent protected requests.
-
-Example:
-
-```http
-Authorization: Bearer <access_token>
-```
-
----
-
-## 2. Product Module
-
-Responsible for product-related operations.
-
-Typical operations:
-
-```text
-CREATE  → Add Product
-GET     → Retrieve Products
-GET /id → Retrieve Product
-PUT     → Update Product
-DELETE  → Delete Product
-```
-
----
-
-## 3. Cart Module
-
-The cart associates users with products.
-
-```text
-User
- │
- └── Cart
-      │
-      ├── Product A
-      ├── Product B
-      └── Product C
-```
-
-The backend calculates quantities and cart totals before order creation.
-
----
-
-## 4. Order Module
-
-The order module converts a user's shopping cart into an order.
-
-```text
-Shopping Cart
-     │
-     ▼
-Order Creation
-     │
-     ├── User
-     ├── Products
-     ├── Quantity
-     ├── Total
-     └── Status
-```
-
----
-
-## 5. Payment Module
-
-The payment module manages payment-related state associated with an order.
-
-Example lifecycle:
-
-```text
-PENDING
-   │
-   ▼
-PROCESSING
-   │
-   ├──────────────┐
-   ▼              ▼
-SUCCESS        FAILED
-   │
-   ▼
-ORDER CONFIRMED
-```
-
----
-
-# 🔐 Authentication & Authorization
-
-Authentication is implemented using token-based authentication.
-
-```text
-                 ┌───────────────┐
-                 │     Login     │
-                 └───────┬───────┘
-                         │
-                         ▼
-                 ┌───────────────┐
-                 │ Verify User   │
-                 └───────┬───────┘
-                         │
-                         ▼
-                 ┌───────────────┐
-                 │ Generate JWT  │
-                 └───────┬───────┘
-                         │
-                         ▼
-                 ┌───────────────┐
-                 │ Client Stores │
-                 │     Token     │
-                 └───────┬───────┘
-                         │
-                         ▼
-                 Protected API
-```
-
-Protected resources validate the JWT before processing the request.
-
----
-
-# 🗄️ Database Architecture
-
-The application uses a relational database accessed through SQLAlchemy.
-
-A conceptual database model is:
-
-```text
-┌──────────────┐
-│    USERS     │
-├──────────────┤
-│ id           │
-│ name         │
-│ email        │
-│ password     │
-└──────┬───────┘
-       │
-       │ 1:N
-       ▼
-┌──────────────┐
-│    ORDERS    │
-├──────────────┤
-│ id           │
-│ user_id      │
-│ total        │
-│ status       │
-└──────┬───────┘
-       │
-       │ 1:N
-       ▼
-┌────────────────┐
-│ ORDER_ITEMS    │
-├────────────────┤
-│ id             │
-│ order_id       │
-│ product_id     │
-│ quantity       │
-└───────┬────────┘
-        │
-        │ N:1
-        ▼
-┌──────────────┐
-│   PRODUCTS   │
-├──────────────┤
-│ id           │
-│ name         │
-│ description  │
-│ price        │
-│ stock        │
-└──────────────┘
-```
-
-The exact entity relationships should be synchronized with the implementation.
-
----
-
-# 🌐 API Architecture
-
-The backend follows REST principles.
-
-Typical endpoint groups include:
-
-| Module         | Method | Purpose           |
-| -------------- | ------ | ----------------- |
-| Authentication | POST   | Register/Login    |
-| Products       | GET    | Retrieve products |
-| Products       | POST   | Create product    |
-| Products       | PUT    | Update product    |
-| Products       | DELETE | Delete product    |
-| Cart           | GET    | View cart         |
-| Cart           | POST   | Add item          |
-| Cart           | PUT    | Update item       |
-| Cart           | DELETE | Remove item       |
-| Orders         | POST   | Create order      |
-| Orders         | GET    | Retrieve orders   |
-| Payments       | POST   | Process payment   |
-
-The exact endpoint paths should be taken from the actual application routes.
-
----
-
-# 📚 API Documentation
-
-After starting the application, FastAPI provides interactive documentation.
-
-### Swagger UI
-
-```text
-http://127.0.0.1:8000/docs
-```
-
-### ReDoc
-
-```text
-http://127.0.0.1:8000/redoc
-```
-
-Swagger UI can be used to:
-
-* Explore endpoints
-* Send HTTP requests
-* Test authentication
-* Inspect request schemas
-* Inspect response models
-* Debug API behavior
-
----
-
-# ⚙️ Installation
-
-## 1. Clone Repository
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/POORNIMA205/Amazon_backend.git
+git clone https://github.com/POORNIMA205/Amazon_backend_Reverse_proxy.git
+cd Amazon_backend_Reverse_proxy
 ```
 
-```bash
-cd Amazon_backend
-```
+### 2. Install NGINX
 
-## 2. Create Virtual Environment
+Install NGINX using the appropriate installation method for your operating system.
 
-### Windows
+For Windows, download it from the official website:
 
-```bash
-python -m venv venv
-```
+https://nginx.org/en/download.html
 
-Activate:
+Extract the downloaded archive and open Git Bash or a terminal in the NGINX directory.
 
-```bash
-venv\Scripts\activate
-```
+### 3. Configure the reverse proxy
 
-### Linux / macOS
+Create or update `conf/nginx.conf` in your NGINX installation directory with a configuration similar to the following:
 
-```bash
-python3 -m venv venv
-```
+```nginx
+events {}
 
-```bash
-source venv/bin/activate
-```
+http {
+    upstream amazon_backend {
+        server 127.0.0.1:8000;
+    }
 
----
+    server {
+        listen 8080;
+        server_name localhost;
 
-# 📦 Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-# 🔑 Configuration
-
-Create a `.env` file for environment-specific configuration.
-
-Example:
-
-```env
-DATABASE_URL=sqlite:///./amazon.db
-SECRET_KEY=your-secret-key
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-```
-
-### Security Note
-
-Never commit real credentials, secret keys, API keys, or production database credentials to GitHub.
-
-Use:
-
-```text
-.env
-```
-
-inside `.gitignore`.
-
----
-
-# ▶️ Running Locally
-
-Start the FastAPI server using Uvicorn:
-
-```bash
-uvicorn app.main:app --reload
-```
-
-The API will be available at:
-
-```text
-http://127.0.0.1:8000
-```
-
-Swagger documentation:
-
-```text
-http://127.0.0.1:8000/docs
-```
-
----
-
-# 🐳 Running with Docker
-
-The application can be containerized to provide a consistent runtime environment.
-
-Build the image:
-
-```bash
-docker build -t amazon-backend .
-```
-
-Run the container:
-
-```bash
-docker run -d \
-  --name amazon-backend \
-  -p 8000:8000 \
-  amazon-backend
-```
-
-Check running containers:
-
-```bash
-docker ps
-```
-
-View logs:
-
-```bash
-docker logs amazon-backend
-```
-
-Stop the container:
-
-```bash
-docker stop amazon-backend
-```
-
-Remove the container:
-
-```bash
-docker rm amazon-backend
-```
-
----
-
-# 🧪 Testing
-
-API testing can be performed using:
-
-* Swagger UI
-* Postman
-* cURL
-* Automated Python tests
-
-Example:
-
-```bash
-pytest
-```
-
-A recommended test structure:
-
-```text
-tests/
-│
-├── test_auth.py
-├── test_products.py
-├── test_cart.py
-├── test_orders.py
-└── test_payments.py
-```
-
----
-
-# 🛡️ Security Considerations
-
-The project demonstrates several backend security concepts:
-
-### Authentication
-
-JWT-based authentication protects private resources.
-
-### Password Protection
-
-Passwords should never be stored as plaintext.
-
-Use a secure password hashing algorithm.
-
-### Environment Variables
-
-Sensitive configuration should be stored outside the source code.
-
-### Input Validation
-
-Pydantic models validate incoming API data before business logic executes.
-
-### Authorization
-
-Protected endpoints should verify that the authenticated user has permission to perform the requested operation.
-
-### Production Security
-
-For production deployment:
-
-* Use HTTPS.
-* Rotate secrets.
-* Use a production-grade database.
-* Enable rate limiting.
-* Add structured logging.
-* Implement security headers.
-* Enable dependency vulnerability scanning.
-* Never expose sensitive credentials.
-
-GitHub also recommends security features such as Dependabot alerts, secret scanning, push protection, and code scanning for repositories.
-
----
-
-# ❌ Error Handling
-
-The API should return meaningful HTTP status codes.
-
-Example:
-
-```text
-200 OK
-201 Created
-400 Bad Request
-401 Unauthorized
-403 Forbidden
-404 Not Found
-409 Conflict
-422 Validation Error
-500 Internal Server Error
-```
-
-Example JSON response:
-
-```json
-{
-    "detail": "Product not found"
+        location / {
+            proxy_pass http://amazon_backend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
 }
 ```
 
----
+This configuration listens on port `8080` and forwards requests to the FastAPI backend on port `8000`.
 
-# ☁️ Deployment Architecture
+### 4. Start the Amazon backend
 
-A cloud-ready version of the application can be deployed using the following architecture:
+Open a separate terminal in your Amazon backend project and activate its Python environment.
 
-```text
-                    INTERNET
-                       │
-                       ▼
-                ┌──────────────┐
-                │ Load Balancer│
-                └──────┬───────┘
-                       │
-                       ▼
-                ┌──────────────┐
-                │    Docker    │
-                │   Container  │
-                └──────┬───────┘
-                       │
-                       ▼
-                ┌──────────────┐
-                │   FastAPI    │
-                │ Application  │
-                └──────┬───────┘
-                       │
-              ┌────────┴─────────┐
-              │                  │
-              ▼                  ▼
-       ┌──────────────┐   ┌──────────────┐
-       │   Database   │   │   Logging    │
-       │    Server    │   │ / Monitoring │
-       └──────────────┘   └──────────────┘
+Run:
+
+```bash
+uvicorn app.main:app --reload --port 8000
 ```
 
-For a production environment, SQLite can be replaced with a managed relational database such as PostgreSQL.
+Ensure the backend starts successfully before testing NGINX.
 
----
+### 5. Test and start NGINX
 
-# 🔄 DevOps Workflow
+From the NGINX installation directory, test the configuration:
 
-The project can be integrated into a CI/CD pipeline:
-
-```text
-Developer
-    │
-    ▼
-Git Push
-    │
-    ▼
-GitHub
-    │
-    ▼
-CI Pipeline
-    │
-    ├── Install Dependencies
-    │
-    ├── Lint
-    │
-    ├── Run Tests
-    │
-    ├── Security Scan
-    │
-    ▼
-Build Docker Image
-    │
-    ▼
-Container Registry
-    │
-    ▼
-Deployment
-    │
-    ▼
-Cloud Environment
+```bash
+nginx -t
 ```
 
-Possible future tooling:
+If the configuration test succeeds, start NGINX:
 
-```text
-GitHub Actions
-Docker
-Docker Hub
-AWS
-Terraform
-Prometheus
-Grafana
+```bash
+nginx
 ```
 
----
+If NGINX is already running and you have changed its configuration, reload it:
 
-# 📊 Backend Design Principles
-
-The project follows several important software engineering concepts:
-
-### Separation of Concerns
-
-Different responsibilities are separated into modules.
-
-### Modularity
-
-Authentication, products, carts, orders, and payments can evolve independently.
-
-### API-First Design
-
-The backend exposes REST APIs that can be consumed by multiple clients.
-
-### Stateless Authentication
-
-JWT authentication allows authenticated requests to carry their own authorization context.
-
-### ORM-Based Persistence
-
-SQLAlchemy abstracts database interactions and reduces direct SQL coupling.
-
-### Schema Validation
-
-Pydantic provides structured request and response validation.
-
-### Containerization
-
-Docker packages the application and dependencies into a reproducible runtime environment.
-
----
-
-# 🚀 Future Enhancements
-
-The following improvements can take the project closer to production scale:
-
-* PostgreSQL integration
-* Redis caching
-* Redis-based session/rate limiting
-* Real payment gateway integration
-* Product search
-* Product filtering
-* Pagination
-* Wishlist functionality
-* Product reviews and ratings
-* Inventory management
-* Email notifications
-* Order tracking
-* Admin dashboard
-* Docker Compose
-* CI/CD using GitHub Actions
-* AWS deployment
-* Infrastructure as Code using Terraform
-* Prometheus monitoring
-* Grafana dashboards
-* Centralized logging
-* Automated security scanning
-* API rate limiting
-
----
-
-# 🎓 Learning Outcomes
-
-This project demonstrates practical understanding of:
-
-* Python backend development
-* FastAPI
-* REST API development
-* HTTP methods and status codes
-* JWT authentication
-* Authorization
-* Pydantic validation
-* SQLAlchemy ORM
-* Relational databases
-* CRUD operations
-* E-commerce workflows
-* API documentation
-* Docker
-* Git and GitHub
-* Backend architecture
-* DevOps deployment concepts
-
----
-
-# 📌 Project Highlights
-
-```text
-Backend Framework     → FastAPI
-Language              → Python
-Database              → SQLite
-ORM                   → SQLAlchemy
-Authentication        → JWT
-API Style             → REST
-Documentation         → Swagger / ReDoc
-Containerization      → Docker
-Version Control       → Git / GitHub
+```bash
+nginx -s reload
 ```
 
----
+### 6. Access the application through NGINX
 
-# 🔗 Repository
+Send requests through the reverse proxy instead of directly to the backend.
 
-**GitHub:**
-https://github.com/POORNIMA205/Amazon_backend
+Base URL:
 
----
+```text
+http://localhost:8080
+```
 
-# 👩‍💻 Author
+FastAPI documentation, if exposed by the backend:
+
+```text
+http://localhost:8080/docs
+```
+
+## 🧪 Testing
+
+Verify that:
+
+1. The FastAPI backend is running on port `8000`.
+2. NGINX starts without configuration errors.
+3. Requests sent to port `8080` reach the backend.
+4. API responses are returned correctly through the proxy.
+
+The exact API endpoints depend on the routes implemented in the Amazon backend.
+
+## 🔒 Security Considerations
+
+* Do not expose passwords, API keys, JWT secrets, or `.env` files in GitHub.
+* Use HTTPS for production deployments.
+* Configure appropriate request size limits and timeouts.
+* Apply authentication and authorization in the backend.
+* Restrict access to internal backend ports when deploying in production.
+
+## 🔮 Future Enhancements
+
+* Load balancing across multiple FastAPI instances
+* HTTPS configuration with TLS certificates
+* Rate limiting and request throttling
+* Health checks and monitoring
+* Docker-based deployment
+* Centralized access and error logging
+
+## 🎯 Learning Outcomes
+
+* Understanding NGINX reverse proxy architecture
+* Configuring HTTP request forwarding
+* Integrating NGINX with FastAPI
+* Managing client-server communication
+* Testing backend APIs through a reverse proxy
+* Using Git and GitHub for project version control
+
+## 👩‍💻 Author
 
 **Poornima H B**
 
-Information Science & Engineering Student
-Aspiring DevOps / Cloud Engineer
-
-GitHub:
-
-https://github.com/POORNIMA205
+* GitHub: https://github.com/POORNIMA205
+* LinkedIn: https://www.linkedin.com/in/poornima-h-b-36bb3a2aa/
 
 ---
 
-
+*This project demonstrates NGINX reverse proxy integration with an Amazon-style FastAPI backend.*

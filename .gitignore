@@ -1,0 +1,20 @@
+@"
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Logs and local databases
+logs/
+*.db
+
+# IDE
+.vscode/
+"@ | Add-Content .gitignore
